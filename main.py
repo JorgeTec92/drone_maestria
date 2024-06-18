@@ -1,6 +1,7 @@
 "Importar librerías"
 import cv2
 from djitellopy import Tello
+from ultralytics import YOLO
 
 "Conectar drone"
 tello = Tello()
@@ -8,6 +9,9 @@ tello.connect()
 
 "Obtener el porcentaje de bateria"
 print(tello.get_battery())
+
+"Cargar el modelo YOLO"
+model = YOLO("weights/best.pt")
 
 "Iniciar el stream del video"
 tello.streamoff()
@@ -21,8 +25,12 @@ while True:
     "Cambiar imagen a blanco y negro"
     img = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
+    "Leer el resultado del modelo"
+    results = model.predict(img)
+    anotacion = results[0].plot()
+
     "Mostrar imagen"
-    cv2.imshow("frame", img)
+    cv2.imshow("frame", anotacion)
 
     "Salir del programa"
     k = cv2.waitKey(30)
