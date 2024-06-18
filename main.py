@@ -18,8 +18,11 @@ while True:
     frame_read = tello.get_frame_read()
     frame = frame_read.frame
 
+    "Cambiar imagen a blanco y negro"
+    img = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
+
     "Mostrar imagen"
-    cv2.imshow("frame", frame)
+    cv2.imshow("frame", img)
 
     "Salir del programa"
     k = cv2.waitKey(30)
