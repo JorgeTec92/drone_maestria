@@ -17,6 +17,9 @@ model = YOLO("weights/best.pt")
 tello.streamoff()
 tello.streamon()
 
+"Agregar limite"
+threshold = 0.65
+
 while True:
     "Obtener el frame"
     frame_read = tello.get_frame_read()
@@ -26,10 +29,15 @@ while True:
     img = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
     "Leer el resultado del modelo"
-    results = model.predict(img)[0].plot()
+    results = model.predict(img)[0]
 
-    "Mostrar imagen"
-    cv2.imshow("frame", results)
+    for result in results.boxes.data.tolist():
+        x1,y1,x2,y2,score,class_id = result
+        texto = class_id
+        if score > threshold:
+            cv2.rectangle(frame, (int(x1),int(y1)),(int(x2),int(y2)),(0,255,0),4)
+
+    cv2.imshow("DJI drone", frame)
 
     "Salir del programa"
     k = cv2.waitKey(30)
