@@ -26,11 +26,10 @@ while True:
     img = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
 
     "Leer el resultado del modelo"
-    results = model.predict(img)
-    anotacion = results[0].plot()
+    results = model.predict(img)[0].plot()
 
     "Mostrar imagen"
-    cv2.imshow("frame", anotacion)
+    cv2.imshow("frame", results)
 
     "Salir del programa"
     k = cv2.waitKey(30)
