@@ -33,9 +33,10 @@ while True:
 
     for result in results.boxes.data.tolist():
         x1,y1,x2,y2,score,class_id = result
-        texto = class_id
+
         if score > threshold:
             cv2.rectangle(frame, (int(x1),int(y1)),(int(x2),int(y2)),(0,255,0),4)
+            cv2.imwrite("picture.png",frame)
 
     cv2.imshow("DJI drone", frame)
 
