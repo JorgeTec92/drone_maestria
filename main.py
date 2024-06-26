@@ -10,9 +10,6 @@ count = 0
 tello = Tello()
 tello.connect()
 
-"Obtener el porcentaje de bateria"
-print(tello.get_battery())
-
 "Crear carpeta para almacenar imagenes"
 output_dir = 'captured_photos'
 os.makedirs(output_dir, exist_ok=True)
@@ -25,7 +22,7 @@ tello.streamoff()
 tello.streamon()
 
 "Agregar limite"
-threshold = 0.65
+threshold = 0.80
 
 while True:
     "Obtener el frame"
