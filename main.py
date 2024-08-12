@@ -18,16 +18,14 @@ os.makedirs(output_dir, exist_ok=True)
 model = YOLO("weights/best.pt")
 
 "Iniciar el stream del video"
-tello.streamoff()
 tello.streamon()
 
 "Agregar limite"
-threshold = 0.80
+threshold = 0.75
 
 while True:
     "Obtener el frame"
-    frame_read = tello.get_frame_read()
-    frame = frame_read.frame
+    frame = tello.get_frame_read().frame
 
     "Cambiar imagen a blanco y negro"
     img = cv2.cvtColor(frame, cv2.COLOR_BGRA2BGR)
@@ -46,7 +44,7 @@ while True:
             cv2.imwrite(photo_path,frame)
             count += 1
             "Esperar 1 segundo antes de tomar la siguiente foto"
-            cv2.waitKey(1000)
+            cv2.waitKey(5000)
 
     cv2.imshow("DJI drone", frame)
 
