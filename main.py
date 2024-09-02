@@ -7,10 +7,11 @@ from djitellopy import Tello
 from ultralytics import YOLO
 
 "Cargar el modelo YOLO"
-model = YOLO("weights/best.pt")
+model = YOLO("weights/roof/best.pt")
+
 
 "Agregar limite"
-threshold = 0.75
+threshold = 0.8
 
 "Conectar drone"
 tello = Tello()
@@ -48,5 +49,13 @@ def detectar():
 
 hiloVideo = threading.Thread(target=detectar)
 hiloVideo.start()
+
+#tello.set_speed(speed)
+#tello.takeoff()
+#tello.move_forward(100)
+#tello.rotate_clockwise(180)
+#tello.move_forward(100)
+#tello.land()
+
 hiloVideo.join()
 cv2.destroyWindow()
