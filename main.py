@@ -1,6 +1,5 @@
 "Importar librerías"
 import cv2
-import os
 import threading
 import time
 from djitellopy import Tello
@@ -9,9 +8,8 @@ from ultralytics import YOLO
 "Cargar el modelo YOLO"
 model = YOLO("weights/roof/best.pt")
 
-
 "Agregar limite"
-threshold = 0.8
+threshold = 0.90
 
 "Conectar drone"
 tello = Tello()
@@ -25,7 +23,6 @@ def detectar():
     count = 0
 
     while True:
-        "Obtener el frame"
         frame = tello.get_frame_read().frame
         results = model.predict(frame)[0]
 
@@ -33,7 +30,9 @@ def detectar():
             x1,y1,x2,y2,score,classId = result
 
             if score > threshold:
-                cv2.rectangle(frame, (int(x1),int(y1)), (int(x2),int(y2)), (0,255,0), 4)
+                print("Porcentaje", score)
+                cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 4)
+                cv2.putText(frame, results.names[int(classId)], (int(x1), int(y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 1.3,(0, 255, 0), 2)
                 cv2.imwrite("captured_photos/"f'photo_{count + 1}.jpg', frame)
                 count += 1
                 cv2.waitKey(5000)
@@ -49,13 +48,5 @@ def detectar():
 
 hiloVideo = threading.Thread(target=detectar)
 hiloVideo.start()
-
-#tello.set_speed(speed)
-#tello.takeoff()
-#tello.move_forward(100)
-#tello.rotate_clockwise(180)
-#tello.move_forward(100)
-#tello.land()
-
 hiloVideo.join()
 cv2.destroyWindow()
