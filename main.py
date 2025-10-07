@@ -20,38 +20,52 @@ tello.connect()
 "Iniciar el stream del video"
 tello.streamon()
 
+def save_img(img, count):
+    cv2.imwrite("captured_photos/"f'photo_{count + 1}.jpg', img)
+
 
 def detectar():
     count = 0
+    last_detection_time = 0
+    frame_reader = tello.get_frame_read()
+    try:
+        while True:
+            # frame = tello.get_frame_read().frame
+            # img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+            # results = model.predict(img)[0]
+            frame = frame_reader.frame  # This uses the most recent frame available
+            img = frame.copy()
+            img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+            results = model.predict(img_rgb, verbose=False)[0]
 
-    while True:
-        frame = tello.get_frame_read().frame
-        img = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = model.predict(img)[0]
+            for result in results.boxes.data.to():
+                x1, y1, x2, y2, score, classId = result
 
-        for result in results.boxes.data.to():
-            x1,y1,x2,y2,score,classId = result
+                if score > threshold and time.time() - last_detection_time > 5:
+                    print("Porcentaje", score)
+                    cv2.rectangle(img_rgb, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 4)
+                    cv2.putText(img_rgb, results.names[int(classId)], (int(x1), int(y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX,
+                                1.3, (0, 255, 0), 2)
+                    threading.Thread(target=save_img, args=(img_rgb, count)).start()
+                    count += 1
+                    last_detection_time = time.time()
 
-            if score > threshold:
-                print("Porcentaje", score)
-                cv2.rectangle(img, (int(x1), int(y1)), (int(x2), int(y2)), (0, 255, 0), 4)
-                cv2.putText(img, results.names[int(classId)], (int(x1), int(y1 - 10)), cv2.FONT_HERSHEY_SIMPLEX, 1.3,(0, 255, 0), 2)
-                cv2.imwrite("captured_photos/"f'photo_{count + 1}.jpg', img)
-                count += 1
-                cv2.waitKey(5000)
+            cv2.imshow("DJI drone", img_rgb)
 
-        cv2.imshow("DJI drone", img)
+            "Salir del programa"
+            k = cv2.waitKey(30)
+            if k == 27:
+                break
 
-        "Salir del programa"
-        k = cv2.waitKey(30)
-        if k == 27:
-            tello.streamoff()
-            cv2.destroyWindow()
-            break
+    except Exception as e:
+        print("Error durante la detección")
+    finally:
+        tello.streamoff()
+        cv2.destroyWindow("")
 
 
 def girar(yaw, x, drone_x, y, drone_y):
-    alpha = math.atan2(y-drone_y, x-drone_x)# Get degrees to of the angle but in radians
+    alpha = math.atan2(y-drone_y, x-drone_x)# Get degrees of the angle but in radians
     alpha_degrees = math.degrees(alpha)     # Convert radians to degrees
 
     angle_to_remove = alpha_degrees - yaw   # Subtract degrees and orientation
@@ -66,28 +80,29 @@ def distancia_euclidea(x, drone_x, y, drone_y):
 hiloVideo = threading.Thread(target=detectar)
 hiloVideo.start()
 
+tello.takeoff()  # Take off drone
+
 " Recorrer de inicio al punto 1 "
 
 "Punto 1"
-drone_pos1 = [116.5,0]
+drone_pos1 = [116.5, 0]
 drone_x1, drone_y1 = drone_pos1
-objective1 = [116.5,166]
+objective1 = [116.5, 166]
 x1, y1 = objective1
 
 'Grados a mover'
-yaw1 = tello.get_yaw() # Get drone orientation
+yaw1 = tello.get_yaw()  # Get drone orientation
 print(f"Orientacion del drone: {yaw1}")
 
 angle_to_move1 = girar(yaw1, x1, drone_x1, y1, drone_y1)
 
-tello.takeoff() # Take off drone
-tello.rotate_counter_clockwise(int(angle_to_move1)) # Rotate drone to left
+tello.rotate_counter_clockwise(int(angle_to_move1))  # Rotate drone to left
 
 'Recorrer la distancia punto 1'
 euclidean_distance1 = distancia_euclidea(x1, drone_x1, y1, drone_y1) # Calculate euclidean distance to point 1
 #print(euclidean_distance1)
 tello.move_forward(int(euclidean_distance1)) # Move drone forward
-time.sleep(0.3)
+time.sleep(3)
 
 " Recorrer del punto 1 al punto 2 "
 
